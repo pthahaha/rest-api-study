@@ -1,6 +1,8 @@
 package kr.pe.acet.acetrestapi.events.controller;
 
 import kr.pe.acet.acetrestapi.events.dto.Event;
+import kr.pe.acet.acetrestapi.events.repository.EventRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,10 +18,17 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 @Controller
 @RequestMapping(value = "/api/events", produces = MediaTypes.HAL_JSON_VALUE)
 public class EventController {
+   // @Autowired EventRepository eventRepository;
+    private final EventRepository eventRepository;
+
+    public EventController(EventRepository eventRepository) {
+        this.eventRepository = eventRepository;
+    }
 
     @PostMapping
     public ResponseEntity createEvent(@RequestBody Event event){
-         URI createdUri = linkTo(EventController.class).slash("{id}").toUri();
+        Event eventSave = this.eventRepository.save(event);
+         URI createdUri = linkTo(EventController.class).slash(eventSave.getId()).toUri();
          event.setId(10);
         return ResponseEntity.created(createdUri).body(event);
     }
