@@ -1,6 +1,7 @@
-package kr.pe.acet.acetrestapi.events;
+package kr.pe.acet.acetrestapi.events.dto;
 
 
+import kr.pe.acet.acetrestapi.events.dto.Event;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

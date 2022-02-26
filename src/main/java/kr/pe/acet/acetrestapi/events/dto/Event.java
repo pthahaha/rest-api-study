@@ -1,5 +1,6 @@
-package kr.pe.acet.acetrestapi.events;
+package kr.pe.acet.acetrestapi.events.dto;
 
+import kr.pe.acet.acetrestapi.events.EventStatus;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -9,7 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter @Setter @EqualsAndHashCode(of = "id")
 public class Event {
-
+    private Integer id;
     private String name;
     private String description;
     private LocalDateTime beginEnrollmentDateTime;
@@ -23,5 +24,4 @@ public class Event {
     private boolean offline;
     private boolean free;
     private EventStatus eventStatus;
-
 }
