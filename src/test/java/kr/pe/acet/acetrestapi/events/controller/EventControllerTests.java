@@ -3,16 +3,13 @@ package kr.pe.acet.acetrestapi.events.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.pe.acet.acetrestapi.events.EventStatus;
 import kr.pe.acet.acetrestapi.events.dto.Event;
-import kr.pe.acet.acetrestapi.events.repository.EventRepository;
+import kr.pe.acet.acetrestapi.events.dto.EventDto;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -37,7 +34,39 @@ public class EventControllerTests {
 
     @Test
     public void createEvent() throws Exception {
+        EventDto eventDto = EventDto.builder()
+                .name("Springboot")
+                .description("REST api development with springboot")
+                .beginEnrollmentDateTime(LocalDateTime.of(2022,02,26,17,32))
+                .closeEnrollmentDateTime(LocalDateTime.of(2022,02,27,17,32))
+                .beginEventDateTime(LocalDateTime.of(2022,02,26,17,32))
+                .endEventDateTime(LocalDateTime.of(2022,02,27,17,32))
+                .basePrice(100)
+                .maxPrice(200)
+                .limitOfEnrollment(100)
+                .location("제주 첨단로 카카오스페이스 닷 투")
+                .build();
+
+
+        mockMvc.perform(post("/api/events")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaTypes.HAL_JSON)
+                        .content(objectMapper.writeValueAsString(eventDto)))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("id").exists())
+                .andExpect(header().exists(HttpHeaders.LOCATION))
+                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_VALUE))
+                .andExpect(jsonPath("id").value(Matchers.not(100)))
+                .andExpect(jsonPath("free").value(Matchers.not(true)))
+                .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()))
+        ;
+    }
+
+    @Test
+    public void createEvent_Bad_Request() throws Exception {
         Event event = Event.builder()
+                .id(100)
                 .name("Springboot")
                 .description("REST api development with springboot")
                 .beginEnrollmentDateTime(LocalDateTime.of(2022,02,26,17,32))
@@ -59,14 +88,10 @@ public class EventControllerTests {
                         .accept(MediaTypes.HAL_JSON)
                         .content(objectMapper.writeValueAsString(event)))
                 .andDo(print())
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("id").exists())
-                .andExpect(header().exists(HttpHeaders.LOCATION))
-                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_VALUE))
-                .andExpect(jsonPath("id").value(Matchers.not(100)))
-                .andExpect(jsonPath("free").value(Matchers.not(true)))
-                .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()))
+                .andExpect(status().isBadRequest())
         ;
     }
+
+
 
 }
