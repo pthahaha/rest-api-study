@@ -6,12 +6,17 @@ import junitparams.Parameters;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.runner.RunWith;
 
 
+import java.util.stream.Stream;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 class EventTest {
    @Test
@@ -40,11 +45,7 @@ class EventTest {
    }
 
    @ParameterizedTest
-   @CsvSource({
-           "0, 0, true",
-           "100,0, false",
-           "0, 100, false"
-   })
+   @MethodSource("parametersProvider")
    public void testFree(int basePrice, int maxPrice, boolean isFree){
       // Given
       Event event = Event.builder()
@@ -56,6 +57,14 @@ class EventTest {
 
       // Then
       assertThat(event.isFree()).isEqualTo(isFree);
+   }
+
+   static Stream<Arguments> parametersProvider(){
+      return Stream.of(
+              arguments(0,0,true),
+              arguments(100,0,false),
+              arguments(0,100,false)
+      );
    }
 
    @Test
