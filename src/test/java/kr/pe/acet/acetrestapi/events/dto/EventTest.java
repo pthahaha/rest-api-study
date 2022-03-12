@@ -45,7 +45,7 @@ class EventTest {
    }
 
    @ParameterizedTest
-   @MethodSource("parametersProvider")
+   @MethodSource("parametersFreeProvider")
    public void testFree(int basePrice, int maxPrice, boolean isFree){
       // Given
       Event event = Event.builder()
@@ -59,7 +59,7 @@ class EventTest {
       assertThat(event.isFree()).isEqualTo(isFree);
    }
 
-   static Stream<Arguments> parametersProvider(){
+   static Stream<Arguments> parametersFreeProvider(){
       return Stream.of(
               arguments(0,0,true),
               arguments(100,0,false),
@@ -67,28 +67,26 @@ class EventTest {
       );
    }
 
-   @Test
-   public void testOffline() {
+   @ParameterizedTest
+   @MethodSource("parametersOfflineProvider")
+   public void testOffline(String location, boolean isOffline) {
       // Given
       Event event = Event.builder()
-              .location("제주 첨단로 카카오스페이스 닷 투")
+              .location(location)
               .build();
       // When
       event.update();
 
       // Then
-      assertThat(event.isOffline()).isTrue();
+      assertThat(event.isOffline()).isEqualTo(isOffline);
 
-      // Given
-      event = Event.builder()
-              .location("")
-              .build();
-      // When
-      event.update();
-
-      // Then
-      assertThat(event.isOffline()).isFalse();
-
+   }
+   static Stream<Arguments> parametersOfflineProvider(){
+      return Stream.of(
+              arguments("제주",true),
+              arguments(null,false),
+              arguments("      ",false)
+      );
    }
 
    }
