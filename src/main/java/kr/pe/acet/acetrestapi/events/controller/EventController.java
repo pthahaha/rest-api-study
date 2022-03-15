@@ -2,10 +2,12 @@ package kr.pe.acet.acetrestapi.events.controller;
 
 import kr.pe.acet.acetrestapi.events.dto.Event;
 import kr.pe.acet.acetrestapi.events.dto.EventDto;
+import kr.pe.acet.acetrestapi.events.dto.EventResource;
 import kr.pe.acet.acetrestapi.events.repository.EventRepository;
 import kr.pe.acet.acetrestapi.events.utils.EventValidator;
 import org.modelmapper.ModelMapper;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
@@ -19,7 +21,7 @@ import java.net.URI;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @Controller
-@RequestMapping(value = "/api/events", produces = MediaTypes.HAL_JSON_VALUE)
+@RequestMapping(value = "/api/events", produces = MediaTypes.HAL_JSON_VALUE+";charset=UTF-8")
 public class EventController {
    // @Autowired EventRepository eventRepository;
     private final EventRepository eventRepository;
@@ -46,7 +48,11 @@ public class EventController {
         Event event = modelMapper.map(eventDto, Event.class );
         event.update();
         Event eventSave = this.eventRepository.save(event);
-        URI createdUri = linkTo(EventController.class).slash(eventSave.getId()).toUri();
-        return ResponseEntity.created(createdUri).body(event);
+        WebMvcLinkBuilder selfLinkbuilder = linkTo(EventController.class).slash(eventSave.getId());
+        URI createdUri = selfLinkbuilder.toUri();
+        EventResource eventResource = new EventResource(event);
+        eventResource.add(linkTo(EventController.class).withRel("query-events"));
+        eventResource.add(selfLinkbuilder.withRel("update-event"));
+        return ResponseEntity.created(createdUri).body(eventResource);
     }
 }
