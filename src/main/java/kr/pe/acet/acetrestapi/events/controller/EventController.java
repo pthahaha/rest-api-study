@@ -6,6 +6,8 @@ import kr.pe.acet.acetrestapi.events.dto.EventResource;
 import kr.pe.acet.acetrestapi.events.repository.EventRepository;
 import kr.pe.acet.acetrestapi.events.utils.EventValidator;
 import org.modelmapper.ModelMapper;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
@@ -53,6 +55,7 @@ public class EventController {
         EventResource eventResource = new EventResource(event);
         eventResource.add(linkTo(EventController.class).withRel("query-events"));
         eventResource.add(selfLinkbuilder.withRel("update-event"));
+        eventResource.add(Link.of("/docs/index.html#resources-events-create", "profile"));
         return ResponseEntity.created(createdUri).body(eventResource);
     }
 }
