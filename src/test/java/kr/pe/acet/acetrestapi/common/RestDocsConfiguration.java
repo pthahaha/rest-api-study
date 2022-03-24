@@ -1,4 +1,4 @@
-package kr.pe.acet.acetrestapi.events.common;
+package kr.pe.acet.acetrestapi.common;
 
 import org.springframework.boot.test.autoconfigure.restdocs.RestDocsMockMvcConfigurationCustomizer;
 import org.springframework.boot.test.context.TestConfiguration;

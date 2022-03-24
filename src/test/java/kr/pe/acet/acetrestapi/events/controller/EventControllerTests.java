@@ -2,7 +2,7 @@ package kr.pe.acet.acetrestapi.events.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.pe.acet.acetrestapi.events.EventStatus;
-import kr.pe.acet.acetrestapi.events.common.RestDocsConfiguration;
+import kr.pe.acet.acetrestapi.common.RestDocsConfiguration;
 import kr.pe.acet.acetrestapi.events.dto.Event;
 import kr.pe.acet.acetrestapi.events.dto.EventDto;
 import org.junit.jupiter.api.DisplayName;
