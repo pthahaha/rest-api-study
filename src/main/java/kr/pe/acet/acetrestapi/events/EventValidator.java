@@ -1,4 +1,4 @@
-package kr.pe.acet.acetrestapi.events.utils;
+package kr.pe.acet.acetrestapi.events;
 
 import kr.pe.acet.acetrestapi.events.dto.EventDto;
 import org.springframework.stereotype.Component;

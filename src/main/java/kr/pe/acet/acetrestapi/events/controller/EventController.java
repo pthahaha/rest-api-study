@@ -4,14 +4,18 @@ import kr.pe.acet.acetrestapi.events.dto.Event;
 import kr.pe.acet.acetrestapi.events.dto.EventDto;
 import kr.pe.acet.acetrestapi.events.dto.EventResource;
 import kr.pe.acet.acetrestapi.events.repository.EventRepository;
-import kr.pe.acet.acetrestapi.events.utils.EventValidator;
+import kr.pe.acet.acetrestapi.events.EventValidator;
+import kr.pe.acet.acetrestapi.utils.ErrorsResource;
 import org.modelmapper.ModelMapper;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,6 +34,8 @@ public class EventController {
     private final ModelMapper modelMapper;
     private final EventValidator eventValidator;
 
+    @Autowired ErrorsResource errorsResource;
+
     public EventController(EventRepository eventRepository, ModelMapper modelMapper, EventValidator eventValidator) {
         this.eventRepository = eventRepository;
         this.modelMapper = modelMapper;
@@ -37,14 +43,14 @@ public class EventController {
     }
 
     @PostMapping
-    public ResponseEntity createEvent(@RequestBody @Valid EventDto eventDto, Errors errors){
+    public ResponseEntity<EntityModel> createEvent(@RequestBody @Valid EventDto eventDto, Errors errors){
         if (errors.hasErrors()) {
-            return ResponseEntity.badRequest().body(errors);
+            return badRequest(errors);
         }
 
         eventValidator.validate(eventDto, errors);
         if (errors.hasErrors()) {
-            return ResponseEntity.badRequest().body(errors);
+            return badRequest(errors);
         }
 
         Event event = modelMapper.map(eventDto, Event.class );
@@ -57,5 +63,9 @@ public class EventController {
         eventResource.add(selfLinkbuilder.withRel("update-event"));
         eventResource.add(Link.of("/docs/index.html#resources-events-create", "profile"));
         return ResponseEntity.created(createdUri).body(eventResource);
+    }
+
+    private ResponseEntity<EntityModel> badRequest(Errors errors) {
+        return ResponseEntity.badRequest().body(errorsResource.addLink(errors));
     }
 }

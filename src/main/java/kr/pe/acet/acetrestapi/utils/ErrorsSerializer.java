@@ -1,4 +1,4 @@
-package kr.pe.acet.acetrestapi.events.utils;
+package kr.pe.acet.acetrestapi.utils;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -13,6 +13,7 @@ public class ErrorsSerializer extends JsonSerializer<Errors> {
 
     @Override
     public void serialize(Errors value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+                gen.writeFieldName("errors");
                 gen.writeStartArray();
                 value.getFieldErrors().forEach(e->{
                     try{
