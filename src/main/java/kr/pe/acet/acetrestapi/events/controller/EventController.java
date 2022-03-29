@@ -92,4 +92,30 @@ public class EventController {
 
         return ResponseEntity.ok(eventResource);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity updateEvent(@PathVariable Integer id, @RequestBody @Valid EventDto eventDto, Errors errors) {
+        Optional<Event> optionalEvent = this.eventRepository.findById(id);
+        if (optionalEvent.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        if (errors.hasErrors()) {  // param에서 오류 발생! 즉, @Valid에서 걸리면
+            return badRequest(errors);
+        }
+
+        this.eventValidator.validate(eventDto, errors); // 바인딩 잘됐음 비즈니스 로직 상 체크
+        if (errors.hasErrors()) {
+            return badRequest(errors);
+        }
+
+        Event existingEvent = optionalEvent.get();
+        this.modelMapper.map(eventDto, existingEvent); // 어디에서 , 어디로
+        Event savedEvent = this.eventRepository.save(existingEvent);
+
+        EventResource eventResource = new EventResource(savedEvent);
+        eventResource.add(Link.of("/docs/index.html#resources-events-update", "profile"));
+
+        return ResponseEntity.ok(eventResource);
+    }
 }
