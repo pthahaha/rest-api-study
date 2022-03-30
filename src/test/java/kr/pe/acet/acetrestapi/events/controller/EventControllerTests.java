@@ -1,6 +1,8 @@
 package kr.pe.acet.acetrestapi.events.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import kr.pe.acet.acetrestapi.common.BaseControllerTest;
+import kr.pe.acet.acetrestapi.common.RestDocsConfiguration;
 import kr.pe.acet.acetrestapi.events.EventStatus;
 import kr.pe.acet.acetrestapi.events.dto.Event;
 import kr.pe.acet.acetrestapi.events.dto.EventDto;
@@ -13,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -34,20 +37,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 //@ExtendWith(SpringExtension.class)
-@ExtendWith({RestDocumentationExtension.class, SpringExtension.class})
-@SpringBootTest
-@AutoConfigureMockMvc
-@AutoConfigureRestDocs
-@ActiveProfiles("test")
-public class EventControllerTests {
-    @Autowired
-    MockMvc mockMvc;
 
-    @Autowired
-    ObjectMapper objectMapper;
-
-    @Autowired
-    EventRepository eventRepository;
+@Import(RestDocsConfiguration.class)
+public class EventControllerTests extends BaseControllerTest {
 
     @Autowired
     ModelMapper modelMapper;
