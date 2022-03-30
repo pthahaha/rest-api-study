@@ -1,5 +1,6 @@
 package kr.pe.acet.acetrestapi.events.dto;
 
+import kr.pe.acet.acetrestapi.accounts.Account;
 import kr.pe.acet.acetrestapi.events.EventStatus;
 import lombok.*;
 
@@ -30,6 +31,8 @@ public class Event {
     private boolean free;
     @Enumerated(EnumType.STRING)
     private EventStatus eventStatus = EventStatus.DRAFT;
+    @ManyToOne
+    private Account manager;
 
     public void update() {
         if (this.basePrice == 0 && this.maxPrice == 0) {
