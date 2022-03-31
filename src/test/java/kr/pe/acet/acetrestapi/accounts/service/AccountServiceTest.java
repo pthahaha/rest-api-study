@@ -4,12 +4,14 @@ import kr.pe.acet.acetrestapi.accounts.Account;
 import kr.pe.acet.acetrestapi.accounts.AccountRole;
 import kr.pe.acet.acetrestapi.accounts.repository.AccountRepository;
 import org.checkerframework.checker.units.qual.A;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.Set;
@@ -48,6 +50,15 @@ class AccountServiceTest {
 
         // Then
         assertThat(userDetails.getPassword().equals(password));
+
+    }
+
+    @Test
+    public void findByUsernameFail(){
+        Assertions.assertThrows(UsernameNotFoundException.class, ()->{
+            String username = "abc@gmail.com";
+            accountService.loadUserByUsername(username);
+        }, "예외가 발생하지 않았습니다.");
 
     }
 
