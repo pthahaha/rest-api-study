@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -51,10 +52,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     // http는 filter를 타면서 체킹 한다.
     // PathRequest.toStaticResources()를 사용해서 staticResources허용.
-//    @Override
-//    public void configure(HttpSecurity http) throws Exception{
-//        http.authorizeRequests()
-//                .mvcMatchers("/docs/index.html").anonymous()
-//                .requestMatchers(PathRequest.toStaticResources().atCommonLocations());
-//    }
+    @Override
+    public void configure(HttpSecurity http) throws Exception{
+        http.anonymous()
+                .and()
+            .formLogin()
+                .and()
+            .authorizeRequests()
+                .mvcMatchers(HttpMethod.GET,"/api/**").authenticated()
+                .anyRequest().authenticated();
+    }
+
+
 }
