@@ -3,7 +3,6 @@ package kr.pe.acet.acetrestapi.accounts.service;
 import kr.pe.acet.acetrestapi.accounts.Account;
 import kr.pe.acet.acetrestapi.accounts.AccountRole;
 import kr.pe.acet.acetrestapi.accounts.repository.AccountRepository;
-import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,9 +14,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.Set;
-
 import static org.assertj.core.api.Assertions.assertThat;
-
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -42,7 +39,6 @@ class AccountServiceTest {
                 .build();
         this.accountRepository.save(account);
 
-
         // When
         UserDetailsService userDetailsService = accountService;
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
@@ -61,5 +57,4 @@ class AccountServiceTest {
         }, "예외가 발생하지 않았습니다.");
 
     }
-
 }
