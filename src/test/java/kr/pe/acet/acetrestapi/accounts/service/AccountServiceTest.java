@@ -31,15 +31,15 @@ class AccountServiceTest {
     @Test
     public void findByUsername(){
         // Given
-        String password = "taeha";
-        String username = "sshaple@naver.com";
+        String password = "taehaha";
+        String username = "sshaple@email.com";
         Account account = Account.builder()
                 .email(username)
                 .password(password)
                 .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
                 .build();
 //        this.accountRepository.save(account);
-        accountService.saveAccount(account); // encoder 추가
+        this.accountService.saveAccount(account); // encoder 추가
 
         // When
         UserDetailsService userDetailsService = accountService;
@@ -47,7 +47,7 @@ class AccountServiceTest {
 
 
         // Then
-        assertThat(this.passwordEncoder.matches(password, userDetails.getPassword()));
+        assertThat(this.passwordEncoder.matches(password, userDetails.getPassword())).isTrue();
 
     }
 
