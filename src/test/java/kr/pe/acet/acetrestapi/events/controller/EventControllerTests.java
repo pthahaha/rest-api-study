@@ -1,10 +1,15 @@
 package kr.pe.acet.acetrestapi.events.controller;
 
+import kr.pe.acet.acetrestapi.accounts.Account;
+import kr.pe.acet.acetrestapi.accounts.AccountRole;
+import kr.pe.acet.acetrestapi.accounts.repository.AccountRepository;
+import kr.pe.acet.acetrestapi.accounts.service.AccountService;
 import kr.pe.acet.acetrestapi.common.BaseControllerTest;
 import kr.pe.acet.acetrestapi.common.RestDocsConfiguration;
 import kr.pe.acet.acetrestapi.events.EventStatus;
 import kr.pe.acet.acetrestapi.events.dto.Event;
 import kr.pe.acet.acetrestapi.events.dto.EventDto;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
@@ -13,7 +18,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.common.util.Jackson2JsonParser;
+import org.springframework.test.web.servlet.ResultActions;
 import java.time.LocalDateTime;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import static org.springframework.restdocs.headers.HeaderDocumentation.*;
@@ -21,6 +29,7 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.li
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -30,6 +39,46 @@ public class EventControllerTests extends BaseControllerTest {
 
     @Autowired
     ModelMapper modelMapper;
+
+    @Autowired
+    AccountService accountService;
+
+    @Autowired
+    AccountRepository accountRepository;
+
+    private String getBearerToken() throws Exception {
+        return "Bearer "+getAccessToken();
+    }
+
+    public String getAccessToken() throws Exception {
+
+        // Given
+        String username = "sshaple@naver.com";
+        String password = "taeha";
+        Account taeha = Account.builder()
+                .email(username)
+                .password(password)
+                .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
+                .build();
+        this.accountService.saveAccount(taeha);
+
+        String clientId="myApp";
+        String clientSecret="pass";
+        ResultActions perform = this.mockMvc.perform(post("/oauth/token")
+                .with(httpBasic(clientId, clientSecret)) // header
+                .param("username", username)
+                .param("password", password)
+                .param("grant_type", "password"));
+        var responseBody = perform.andReturn().getResponse().getContentAsString();
+        Jackson2JsonParser parser = new Jackson2JsonParser();
+        return parser.parseMap(responseBody).get("access_token").toString();
+    }
+
+    @BeforeEach
+    public void setUp() {
+        this.eventRepository.deleteAll();
+        this.accountRepository.deleteAll();
+    }
 
     @Test
     @DisplayName("정상적으로 이벤트를 생성하는 테스트")
@@ -49,6 +98,7 @@ public class EventControllerTests extends BaseControllerTest {
 
 
         mockMvc.perform(post("/api/events")
+                        .header(HttpHeaders.AUTHORIZATION,getBearerToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaTypes.HAL_JSON)
                         .content(objectMapper.writeValueAsString(eventDto)))
@@ -94,7 +144,7 @@ public class EventControllerTests extends BaseControllerTest {
                         ),
                         // relaxedResponseFields( : relaxed 접두어 - 문서 일부분만 테스트할 수 있다. 그러나 정확한 문서를 생성하지 못한다.
                         // 위에 이미 link를 테스트하기 때문에 오류가 나는것에 대해서는 살짝 의문
-                        responseFields(
+                        relaxedResponseFields(
                                 fieldWithPath("id").description("id of new event"),
                                 fieldWithPath("name").description("Name of new event"),
                                 fieldWithPath("description").description("description of new event"),
@@ -140,6 +190,7 @@ public class EventControllerTests extends BaseControllerTest {
 
 
         mockMvc.perform(post("/api/events")
+                        .header(HttpHeaders.AUTHORIZATION,getBearerToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaTypes.HAL_JSON)
                         .content(objectMapper.writeValueAsString(event)))
@@ -153,6 +204,7 @@ public class EventControllerTests extends BaseControllerTest {
     public void createEvent_Bad_Request_Empty_Input() throws Exception {
         EventDto eventDto = EventDto.builder().build();
         this.mockMvc.perform(post("/api/events")
+                .header(HttpHeaders.AUTHORIZATION,getBearerToken())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(this.objectMapper.writeValueAsString(eventDto)))
                 .andExpect(status().isBadRequest());
@@ -175,6 +227,7 @@ public class EventControllerTests extends BaseControllerTest {
                 .build();
 
         mockMvc.perform(post("/api/events")
+                        .header(HttpHeaders.AUTHORIZATION,getBearerToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaTypes.HAL_JSON)
                         .content(objectMapper.writeValueAsString(eventDto)))
@@ -246,55 +299,56 @@ public class EventControllerTests extends BaseControllerTest {
 
         // When & Then
         this.mockMvc.perform(put("/api/events/{id}", event.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(this.objectMapper.writeValueAsString(eventDto)))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("name").value(eventName))
-                .andExpect(jsonPath("_links.self").exists())
-                .andDo(document("update-event",
-                        links(
-                                linkWithRel("self").description("link to self"),
-                                linkWithRel("profile").description("link to profile")
-                        )
-                        ,requestHeaders(
-                                headerWithName(HttpHeaders.CONTENT_TYPE).description("content type header")
-                        )
-                        ,requestFields(
-                                fieldWithPath("name").description("Name of new event"),
-                                fieldWithPath("description").description("description of new event"),
-                                fieldWithPath("beginEnrollmentDateTime").description("date time of beginEnrollmentDateTime"),
-                                fieldWithPath("closeEnrollmentDateTime").description("date time of closeEnrollmentDateTime"),
-                                fieldWithPath("beginEventDateTime").description("date time of beginEventDateTime"),
-                                fieldWithPath("endEventDateTime").description("date time of endEventDateTime"),
-                                fieldWithPath("location").description("location of new event"),
-                                fieldWithPath("basePrice").description("base price of new event"),
-                                fieldWithPath("maxPrice").description("max price of new event"),
-                                fieldWithPath("limitOfEnrollment").description("limit of new event")
+                    .header(HttpHeaders.AUTHORIZATION,getBearerToken())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(this.objectMapper.writeValueAsString(eventDto)))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("name").value(eventName))
+                    .andExpect(jsonPath("_links.self").exists())
+                    .andDo(document("update-event",
+                            links(
+                                    linkWithRel("self").description("link to self"),
+                                    linkWithRel("profile").description("link to profile")
+                            )
+                            ,requestHeaders(
+                                    headerWithName(HttpHeaders.CONTENT_TYPE).description("content type header")
+                            )
+                            ,requestFields(
+                                    fieldWithPath("name").description("Name of new event"),
+                                    fieldWithPath("description").description("description of new event"),
+                                    fieldWithPath("beginEnrollmentDateTime").description("date time of beginEnrollmentDateTime"),
+                                    fieldWithPath("closeEnrollmentDateTime").description("date time of closeEnrollmentDateTime"),
+                                    fieldWithPath("beginEventDateTime").description("date time of beginEventDateTime"),
+                                    fieldWithPath("endEventDateTime").description("date time of endEventDateTime"),
+                                    fieldWithPath("location").description("location of new event"),
+                                    fieldWithPath("basePrice").description("base price of new event"),
+                                    fieldWithPath("maxPrice").description("max price of new event"),
+                                    fieldWithPath("limitOfEnrollment").description("limit of new event")
 
-                        ),responseHeaders(
-                                headerWithName(HttpHeaders.CONTENT_TYPE).description("ContentType header")
-                        ),
-                        responseFields(
-                                fieldWithPath("id").description("id of update event"),
-                                fieldWithPath("name").description("Name of update event"),
-                                fieldWithPath("description").description("description of update event"),
-                                fieldWithPath("beginEnrollmentDateTime").description("date time of beginEnrollmentDateTime"),
-                                fieldWithPath("closeEnrollmentDateTime").description("date time of closeEnrollmentDateTime"),
-                                fieldWithPath("beginEventDateTime").description("date time of beginEventDateTime"),
-                                fieldWithPath("endEventDateTime").description("date time of endEventDateTime"),
-                                fieldWithPath("location").description("location of update event"),
-                                fieldWithPath("basePrice").description("base price of update event"),
-                                fieldWithPath("maxPrice").description("max price of update event"),
-                                fieldWithPath("limitOfEnrollment").description("limit of update event"),
-                                fieldWithPath("free").description("it tells if this event is free or not"),
-                                fieldWithPath("offline").description("it tells if this event is offline event or not"),
-                                fieldWithPath("eventStatus").description("event status"),
-                                fieldWithPath("_links.self.href").description("link to self"),
-                                fieldWithPath("_links.profile.href").description("link to profile")
-                        )
-                        )
-                )
+                            ),responseHeaders(
+                                    headerWithName(HttpHeaders.CONTENT_TYPE).description("ContentType header")
+                            ),
+                            relaxedResponseFields(
+                                    fieldWithPath("id").description("id of update event"),
+                                    fieldWithPath("name").description("Name of update event"),
+                                    fieldWithPath("description").description("description of update event"),
+                                    fieldWithPath("beginEnrollmentDateTime").description("date time of beginEnrollmentDateTime"),
+                                    fieldWithPath("closeEnrollmentDateTime").description("date time of closeEnrollmentDateTime"),
+                                    fieldWithPath("beginEventDateTime").description("date time of beginEventDateTime"),
+                                    fieldWithPath("endEventDateTime").description("date time of endEventDateTime"),
+                                    fieldWithPath("location").description("location of update event"),
+                                    fieldWithPath("basePrice").description("base price of update event"),
+                                    fieldWithPath("maxPrice").description("max price of update event"),
+                                    fieldWithPath("limitOfEnrollment").description("limit of update event"),
+                                    fieldWithPath("free").description("it tells if this event is free or not"),
+                                    fieldWithPath("offline").description("it tells if this event is offline event or not"),
+                                    fieldWithPath("eventStatus").description("event status"),
+                                    fieldWithPath("_links.self.href").description("link to self"),
+                                    fieldWithPath("_links.profile.href").description("link to profile")
+                            )
+                            )
+                    )
         ;
     }
 
@@ -307,6 +361,7 @@ public class EventControllerTests extends BaseControllerTest {
 
         // When & Then
         this.mockMvc.perform(put("/api/events/{id}", event.getId())
+                        .header(HttpHeaders.AUTHORIZATION,getBearerToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(eventDto)))
                 .andDo(print())
@@ -325,6 +380,7 @@ public class EventControllerTests extends BaseControllerTest {
 
         // When & Then
         this.mockMvc.perform(put("/api/events/{id}", event.getId())
+                        .header(HttpHeaders.AUTHORIZATION,getBearerToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(eventDto)))
                 .andDo(print())
@@ -341,6 +397,7 @@ public class EventControllerTests extends BaseControllerTest {
 
         // When & Then
         this.mockMvc.perform(put("/api/events/486486")
+                .header(HttpHeaders.AUTHORIZATION,getBearerToken())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(this.objectMapper.writeValueAsString(eventDto)))
                 .andDo(print())
