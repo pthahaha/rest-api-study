@@ -3,6 +3,7 @@ package kr.pe.acet.acetrestapi.configs;
 import kr.pe.acet.acetrestapi.accounts.Account;
 import kr.pe.acet.acetrestapi.accounts.AccountRole;
 import kr.pe.acet.acetrestapi.accounts.service.AccountService;
+import kr.pe.acet.acetrestapi.utils.AppProperties;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
@@ -32,14 +33,24 @@ public class AppConfig {
             @Autowired
             AccountService accountService;
 
+            @Autowired
+            AppProperties appProperties;
+
             @Override
             public void run(ApplicationArguments args) throws Exception {
-                Account taeha = Account.builder()
-                        .email("sshaple@naver.com")
-                        .password("taeha")
+                Account admin = Account.builder()
+                        .email(appProperties.getAdminUsername())
+                        .password(appProperties.getAdminPassword())
                         .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
                         .build();
-                accountService.saveAccount(taeha);
+                accountService.saveAccount(admin);
+
+                Account user = Account.builder()
+                        .email(appProperties.getUserUsername())
+                        .password(appProperties.getUserPassword())
+                        .roles(Set.of(AccountRole.USER))
+                        .build();
+                accountService.saveAccount(user);
             }
         };
     }

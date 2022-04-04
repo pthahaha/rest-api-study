@@ -9,6 +9,7 @@ import kr.pe.acet.acetrestapi.common.RestDocsConfiguration;
 import kr.pe.acet.acetrestapi.events.EventStatus;
 import kr.pe.acet.acetrestapi.events.dto.Event;
 import kr.pe.acet.acetrestapi.events.dto.EventDto;
+import kr.pe.acet.acetrestapi.utils.AppProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,28 +47,26 @@ public class EventControllerTests extends BaseControllerTest {
     @Autowired
     AccountRepository accountRepository;
 
+    @Autowired
+    AppProperties appProperties;
+
     private String getBearerToken() throws Exception {
         return "Bearer "+getAccessToken();
     }
 
     public String getAccessToken() throws Exception {
-
         // Given
-        String username = "sshaple@naver.com";
-        String password = "taeha";
         Account taeha = Account.builder()
-                .email(username)
-                .password(password)
+                .email(appProperties.getUserUsername())
+                .password(appProperties.getUserPassword())
                 .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
                 .build();
         this.accountService.saveAccount(taeha);
 
-        String clientId="myApp";
-        String clientSecret="pass";
         ResultActions perform = this.mockMvc.perform(post("/oauth/token")
-                .with(httpBasic(clientId, clientSecret)) // header
-                .param("username", username)
-                .param("password", password)
+                .with(httpBasic(appProperties.getClientId(), appProperties.getClientSecret())) // header
+                .param("username", appProperties.getUserUsername())
+                .param("password", appProperties.getUserPassword())
                 .param("grant_type", "password"));
         var responseBody = perform.andReturn().getResponse().getContentAsString();
         Jackson2JsonParser parser = new Jackson2JsonParser();
