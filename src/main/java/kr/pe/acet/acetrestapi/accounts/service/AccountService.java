@@ -1,6 +1,7 @@
 package kr.pe.acet.acetrestapi.accounts.service;
 
 import kr.pe.acet.acetrestapi.accounts.Account;
+import kr.pe.acet.acetrestapi.accounts.AccountAdapter;
 import kr.pe.acet.acetrestapi.accounts.AccountRole;
 import kr.pe.acet.acetrestapi.accounts.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,15 +34,8 @@ public class AccountService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-
         Account account = accountRepository.findByEmail(username)
                 .orElseThrow(()-> new UsernameNotFoundException(username));
-        return new User(account.getEmail(), account.getPassword(), authorities(account.getRoles()));
-    }
-
-    private Collection<? extends GrantedAuthority> authorities(Set<AccountRole> roles) {
-        return roles.stream()
-                .map(r -> new SimpleGrantedAuthority("ROLE"+ r.name()))
-                .collect(Collectors.toSet());
+        return new AccountAdapter(account);
     }
 }
