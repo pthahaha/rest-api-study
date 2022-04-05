@@ -1,6 +1,8 @@
 package kr.pe.acet.acetrestapi.events.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import kr.pe.acet.acetrestapi.accounts.Account;
+import kr.pe.acet.acetrestapi.accounts.AccountSerializer;
 import kr.pe.acet.acetrestapi.events.EventStatus;
 import lombok.*;
 
@@ -32,6 +34,7 @@ public class Event {
     @Enumerated(EnumType.STRING)
     private EventStatus eventStatus = EventStatus.DRAFT;
     @ManyToOne
+    @JsonSerialize(using= AccountSerializer.class)
     private Account manager;
 
     public void update() {
