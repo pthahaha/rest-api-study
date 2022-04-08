@@ -1,21 +1,19 @@
 package kr.pe.acet.acetrestapi.configs;
 
-import kr.pe.acet.acetrestapi.accounts.Account;
-import kr.pe.acet.acetrestapi.accounts.AccountRole;
 import kr.pe.acet.acetrestapi.accounts.service.AccountService;
-import kr.pe.acet.acetrestapi.common.BaseControllerTest;
+import kr.pe.acet.acetrestapi.common.BaseTest;
 import kr.pe.acet.acetrestapi.utils.AppProperties;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import java.util.Set;
+
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class AuthServerConfigTest extends BaseControllerTest {
+class AuthServerConfigTest extends BaseTest {
 
     @Autowired
     AccountService accountService;

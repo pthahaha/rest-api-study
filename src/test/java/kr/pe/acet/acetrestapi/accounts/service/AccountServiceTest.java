@@ -2,25 +2,18 @@ package kr.pe.acet.acetrestapi.accounts.service;
 
 import kr.pe.acet.acetrestapi.accounts.Account;
 import kr.pe.acet.acetrestapi.accounts.AccountRole;
-import kr.pe.acet.acetrestapi.accounts.repository.AccountRepository;
+import kr.pe.acet.acetrestapi.common.BaseTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@ExtendWith(SpringExtension.class)
-@SpringBootTest
-@ActiveProfiles("test")
-class AccountServiceTest {
+class AccountServiceTest extends BaseTest {
 
     @Autowired
     AccountService accountService;
@@ -44,7 +37,6 @@ class AccountServiceTest {
         // When
         UserDetailsService userDetailsService = accountService;
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
 
         // Then
         assertThat(this.passwordEncoder.matches(password, userDetails.getPassword())).isTrue();
